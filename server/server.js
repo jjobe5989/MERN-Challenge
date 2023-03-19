@@ -1,31 +1,45 @@
-import express from "express";
-import path from "path";
-import { ApolloServer } from "apollo-server-express";
-import { typeDefs, resolvers } from "./schemas";
-import { authMiddleware } from "./utils/auth";
-import db from "./config/connection";
+const express = require("express");
+const path = require("path");
+//import apollo server
+const { ApolloServer } = require("apollo-server-express");
+// import typeDefs and resolvers
+const { typeDefs, resolvers } = require("./schema");
+const { authMiddleware } = require("./utils/auth");
 
+//db connection
+const db = require("./config/connection");
+
+// const routes = require('./routes');
+
+//express server
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+//apollo server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: authMiddleware,
 });
 
+//apply apollo server with express app
 server.applyMiddleware({ app });
 
+//middleware parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-const buildPath = path.join(__dirname, "../client/build");
+const _dirname = path.dirname("");
+const buildPath = path.join(_dirname, "../client/build");
 app.use(express.static(buildPath));
-
+// if we're in production, serve client/build as static assets
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/build")));
 }
 
+// app.use(routes);
+
+//get all
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
